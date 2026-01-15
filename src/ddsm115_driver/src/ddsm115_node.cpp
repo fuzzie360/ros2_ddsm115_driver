@@ -96,7 +96,7 @@ public:
     }
 
     // Create services
-    auto qos = rmw_qos_profile_services_default;
+    rclcpp::QoS qos = rclcpp::ServicesQoS();
     set_id_srv_ = this->create_service<ddsm115_driver::srv::SetMotorId>(
       "set_motor_id",
       [this](const std::shared_ptr<ddsm115_driver::srv::SetMotorId::Request> req,
