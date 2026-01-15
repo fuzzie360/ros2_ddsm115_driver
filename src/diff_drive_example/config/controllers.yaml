@@ -1,0 +1,71 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+diff_drive_controller:
+  ros__parameters:
+    # Wheel joints
+    left_wheel_names: ["left_wheel_joint"]
+    right_wheel_names: ["right_wheel_joint"]
+
+    # Wheel parameters (DDSM115 motor specs)
+    wheel_separation: 0.3
+    wheel_radius: 0.05035
+
+    # Multipliers for wheel separation and radius (for calibration)
+    wheel_separation_multiplier: 1.0
+    wheel_radius_multiplier: 1.0
+
+    # Publishing rate for odometry
+    publish_rate: 50.0
+
+    # Odometry configuration
+    odom_frame_id: odom
+    base_frame_id: base_link
+    pose_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 0.001, 0.001, 0.01]
+
+    # Whether to publish odometry to tf
+    enable_odom_tf: true
+
+    # Velocity command timeout (seconds)
+    cmd_vel_timeout: 0.5
+
+    # Velocity and acceleration limits
+    linear:
+      x:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        has_jerk_limits: false
+        max_velocity: 1.0
+        min_velocity: -1.0
+        max_acceleration: 1.0
+        min_acceleration: -1.0
+
+    angular:
+      z:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        has_jerk_limits: false
+        max_velocity: 2.0
+        min_velocity: -2.0
+        max_acceleration: 2.0
+        min_acceleration: -2.0
+
+    # Use stamped velocity commands
+    use_stamped_vel: false
+
+    # Preserve turning radius when limiting velocity
+    preserve_turning_radius: true
+
+    # Publish limited velocity
+    publish_cmd: true
+
+    # Publish wheel data
+    publish_wheel_data: true
