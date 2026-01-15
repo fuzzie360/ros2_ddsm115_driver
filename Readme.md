@@ -1,6 +1,6 @@
-## ROS2 Humble Node for DDSM115 
+## ROS2 Jazzy Node for DDSM115
 
-This repository contains a ROS2 Humble node for [DDSM115 motor](https://www.waveshare.com/wiki/DDSM115) from waveshare. This packages contains DDSM115Commuicator library which can be used to control/configure the motor. The library is based on the DDSM115 commuincation protocol as described in the [DDSM115 datasheet](https://www.waveshare.com/w/upload/5/5c/DDSM115-Protocol.pdf). There is an example ROS2 node that uses the DDSM115Commuicator library to control the motor. The node subscribes to a topic and sends commands to the motor based on the received messages. The node also publishes the motor state and configuration parameters.
+This repository contains a ROS2 Jazzy node for [DDSM115 motor](https://www.waveshare.com/wiki/DDSM115) from waveshare. This packages contains DDSM115Commuicator library which can be used to control/configure the motor. The library is based on the DDSM115 commuincation protocol as described in the [DDSM115 datasheet](https://www.waveshare.com/w/upload/5/5c/DDSM115-Protocol.pdf). There is an example ROS2 node that uses the DDSM115Commuicator library to control the motor. The node subscribes to a topic and sends commands to the motor based on the received messages. The node also publishes the motor state and configuration parameters.
 
 Also, the package contains ROS2 control's Hardware Interface plugin that can used in the URDF file like any other ros2_control plugin. 
 
@@ -16,11 +16,11 @@ Also, the package contains ROS2 control's Hardware Interface plugin that can use
    ```
 2. Install dependencies:
    ```bash
-   sudo apt install ros-humble-ros2-control
-   sudo apt install ros-humble-ros2-controllers
-   sudo apt install ros-humble-position-controllers
-   sudo apt install ros-humble-joint-state-publisher
-   sudo apt install ros-humble-joint-state-broadcaster
+   sudo apt install ros-jazzy-ros2-control
+   sudo apt install ros-jazzy-ros2-controllers
+   sudo apt install ros-jazzy-position-controllers
+   sudo apt install ros-jazzy-joint-state-publisher
+   sudo apt install ros-jazzy-joint-state-broadcaster
    ```
 3. Build the workspace:
    ```bash
