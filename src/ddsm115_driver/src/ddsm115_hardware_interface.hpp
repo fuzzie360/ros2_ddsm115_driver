@@ -36,6 +36,7 @@ private:
     uint8_t id;
     ddsm115::Mode mode;
     ddsm115::Feedback feedback;
+    bool invert;
   };
   double motor_radius_ = 0.05035; // radius of motor in meters
   double motor_torque_constant_ = 0.75; // torque constant of motor in Nm/A

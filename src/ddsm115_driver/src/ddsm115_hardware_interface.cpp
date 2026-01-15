@@ -39,9 +39,9 @@ CallbackReturn DDSM115HardwareInterface::on_init(const hardware_interface::Hardw
     // check motor mode
     auto it_mode = joint.parameters.find("mode");
     std::string m = it_mode->second ;
-    if (m == "POSITION_LOOP") 
+    if (m == "POSITION_LOOP")
       motor_mode =  ddsm115::Mode::POSITION_LOOP;
-    else if (m == "VELOCITY_LOOP")                  
+    else if (m == "VELOCITY_LOOP")
       motor_mode = ddsm115::Mode::VELOCITY_LOOP;
     else if (m == "EFFORT_LOOP")
       motor_mode = ddsm115::Mode::CURRENT_LOOP;
@@ -49,11 +49,17 @@ CallbackReturn DDSM115HardwareInterface::on_init(const hardware_interface::Hardw
       RCLCPP_ERROR(rclcpp::get_logger("DDSM115HW"), "Joint '%s' has invalid mode '%s'", joint.name.c_str(), m.c_str());
       return CallbackReturn::ERROR;
     }
-    
 
-    RCLCPP_INFO(rclcpp::get_logger("DDSM115HW"), "Joint '%s': motor_id=%d, mode=%s",
-                joint.name.c_str(), motor_id, m.c_str());
-    motor_info_.emplace_back(MotorInfo{motor_id, motor_mode});
+    // check invert parameter (optional, defaults to false)
+    bool invert = false;
+    auto it_invert = joint.parameters.find("invert");
+    if (it_invert != joint.parameters.end()) {
+      invert = (it_invert->second == "true" || it_invert->second == "1");
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("DDSM115HW"), "Joint '%s': motor_id=%d, mode=%s, invert=%s",
+                joint.name.c_str(), motor_id, m.c_str(), invert ? "true" : "false");
+    motor_info_.emplace_back(MotorInfo{motor_id, motor_mode, {}, invert});
   }
   
   // Read 'port' from <ros2_control> <param> in URDF
@@ -142,17 +148,22 @@ return_type DDSM115HardwareInterface::read(
         RCLCPP_WARN(rclcpp::get_logger("DDSM115HW"), "Read error on motor with ID : %u", motor_info_[i].id);
         continue;
       }
-      position_[i] = (motor_info_[i].feedback.position * M_PI ) / 180.0; // Convert to radians
-      velocity_[i] = 2 * M_PI * motor_radius_ * (motor_info_[i].feedback.velocity/60.0);
+      double invert_multiplier = motor_info_[i].invert ? -1.0 : 1.0;
+      position_[i] = invert_multiplier * (motor_info_[i].feedback.position * M_PI ) / 180.0; // Convert to radians
+      velocity_[i] = invert_multiplier * 2 * M_PI * motor_radius_ * (motor_info_[i].feedback.velocity/60.0);
       effort_[i]   = motor_torque_constant_ * (motor_info_[i].feedback.current);
     }
     return return_type::OK;
 }
 
 return_type DDSM115HardwareInterface::write(
-  const rclcpp::Time &, const rclcpp::Duration &) {    
+  const rclcpp::Time &, const rclcpp::Duration &) {
     for (size_t i = 0; i < motor_info_.size(); ++i){
       double cmd_value_ = static_cast<double>(command_[i]);
+      // Apply inversion if configured
+      if (motor_info_[i].invert) {
+        cmd_value_ = -cmd_value_;
+      }
       switch (motor_info_[i].mode) {
         case ddsm115::Mode::POSITION_LOOP:
           cmd_value_ = ( cmd_value_ * 180.0 / M_PI);

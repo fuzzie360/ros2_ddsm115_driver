@@ -175,6 +175,7 @@
     <joint name="left_wheel_joint">
       <param name="motor_id">1</param>
       <param name="mode">VELOCITY_LOOP</param>
+      <param name="invert">false</param>
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
@@ -183,6 +184,7 @@
     <joint name="right_wheel_joint">
       <param name="motor_id">2</param>
       <param name="mode">VELOCITY_LOOP</param>
+      <param name="invert">true</param>
       <command_interface name="velocity"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
