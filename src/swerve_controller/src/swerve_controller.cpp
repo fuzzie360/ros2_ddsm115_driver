@@ -49,14 +49,14 @@ Wheel::Wheel(std::reference_wrapper<hardware_interface::LoanedCommandInterface> 
 
 void Wheel::set_velocity(double velocity)
 {
-  velocity_.get().set_value(velocity);
+  (void)velocity_.get().set_value(velocity);
 }
 Axle::Axle(std::reference_wrapper<hardware_interface::LoanedCommandInterface> position,
                          std::string name) : position_(position), name(std::move(name)) {}
 
 void Axle::set_position(double position)
 {
-  position_.get().set_value(position);
+  (void)position_.get().set_value(position);
 }
 SwerveController::SwerveController() : controller_interface::ControllerInterface() {}
 
@@ -116,7 +116,7 @@ controller_interface::return_type SwerveController::update(
 {
   // auto logger = get_node()->get_logger();
   auto logger = get_node()->get_logger();
-  if (get_state().id() == State::PRIMARY_STATE_INACTIVE)
+  if (get_lifecycle_state().id() == State::PRIMARY_STATE_INACTIVE)
   {
     if (!is_halted)
     {
@@ -129,7 +129,7 @@ controller_interface::return_type SwerveController::update(
   const auto current_time = time;
 
   std::shared_ptr<Twist> last_command_msg;
-  received_velocity_msg_ptr_.get(last_command_msg);
+  received_velocity_msg_ptr_.get([&last_command_msg](const auto& ptr) { last_command_msg = ptr; });
 
   if (last_command_msg == nullptr)
   {
@@ -257,7 +257,7 @@ CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State &)
   }
 
   const Twist empty_twist;
-  received_velocity_msg_ptr_.set(std::make_shared<Twist>(empty_twist));
+  received_velocity_msg_ptr_.set([&empty_twist](auto& ptr) { ptr = std::make_shared<Twist>(empty_twist); });
 
   // initialize command subscriber
   if (use_stamped_vel_)
@@ -278,7 +278,7 @@ CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State &)
             "time, this message will only be shown once");
           msg->header.stamp = get_node()->get_clock()->now();
         }
-        received_velocity_msg_ptr_.set(std::move(msg));
+        received_velocity_msg_ptr_.set([msg](auto& ptr) { ptr = msg; });
       });
   }
   else
@@ -293,10 +293,12 @@ CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State &)
         }
 
         // Write fake header in the stored stamped command
-        std::shared_ptr<Twist> twist_stamped;
-        received_velocity_msg_ptr_.get(twist_stamped);
-        twist_stamped->twist = *msg;
-        twist_stamped->header.stamp = get_node()->get_clock()->now();
+        received_velocity_msg_ptr_.set([this, msg](auto& twist_stamped) {
+          if (twist_stamped) {
+            twist_stamped->twist = *msg;
+            twist_stamped->header.stamp = get_node()->get_clock()->now();
+          }
+        });
       });
   }
 
@@ -341,7 +343,7 @@ CallbackReturn SwerveController::on_cleanup(const rclcpp_lifecycle::State &)
     return CallbackReturn::ERROR;
   }
 
-  received_velocity_msg_ptr_.set(std::make_shared<Twist>());
+  received_velocity_msg_ptr_.set([](auto& ptr) { ptr = std::make_shared<Twist>(); });
   return CallbackReturn::SUCCESS;
 }
 
@@ -360,7 +362,7 @@ bool SwerveController::reset()
   velocity_command_subscriber_.reset();
   velocity_command_unstamped_subscriber_.reset();
 
-  received_velocity_msg_ptr_.set(nullptr);
+  received_velocity_msg_ptr_.set([](auto& ptr) { ptr = nullptr; });
   is_halted = false;
   return true;
 }
